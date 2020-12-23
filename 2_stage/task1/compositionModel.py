@@ -30,34 +30,51 @@ class Model:
 
         self.XTrain, self.XComposition, self.YTrain, self.YComposition = train_test_split(x_train, y_train, test_size = 0.5, random_state = 42)
 
+    def save(self):
+        return {"models_vector": self.models_vector, "composition_model": self.composition_model}
+
     def train_models(self):
-        self.model_RFC = RandomForestClassifier(n_estimators = 100, max_depth = 10, random_state = 42)
+        self.model_RFC = RandomForestClassifier(n_estimators = 100, max_depth = 9, random_state = 42)
         self.model_RFC.fit(self.XTrain, self.YTrain)
+
+        print("RFR trained")
 
         self.model_GBC = GradientBoostingClassifier(n_estimators = 200, max_depth = 10, random_state = 42)
         self.model_GBC.fit(self.XTrain, self.YTrain)
 
-        self.model_XGB = XGBClassifier(n_estimators = 100, max_depth = 100, random_state = 42)
+        print("GBC trained")
+
+        self.model_XGB = XGBClassifier(n_estimators = 100, max_depth = 10, random_state = 42)
         self.model_XGB.fit(self.XTrain, self.YTrain)
+
+        print("XGB trained")
 
         self.model_CBC = CatBoostClassifier(silent = True)
         self.model_CBC.fit(self.XTrain, self.YTrain)
 
+        print("CBC trained")
+
         self.model_LGBM = LGBMClassifier(n_estimators = 100, learning_rate = 0.1, max_depth = 100)
         self.model_LGBM.fit(self.XTrain, self.YTrain)
 
+        print("LGBM trained")
+
+        self.models_vector = np.array([self.model_RFC, self.model_GBC, self.model_XGB, self.model_CBC, self.model_LGBM], dtype = object)
+
     def composition_predict(self, X):
-        return np.array([self.model_RFC.predict(X), self.model_GBC.predict(X), self.model_XGB.predict(X), self.model_CBC.predict(X), self.model_LGBM.predict(X)])
+        return np.array([model.predict(X) for model in self.models_vector])
 
     def composition_predict_proba(self, X):
-        return np.array([self.model_RFC.predict_proba(X).T[1], self.model_GBC.predict_proba(X).T[1], self.model_XGB.predict_proba(X).T[1], self.model_CBC.predict_proba(X).T[1], self.model_LGBM.predict_proba(X).T[1]])
+        return np.array([model.predict_proba(X).T[1] for model in self.models_vector])
 
     def composition_models(self):
         self.composition_arr = self.composition_predict_proba(self.XComposition).T
+
         self.composition_model = LogisticRegression().fit(self.composition_arr, self.YComposition)
 
     def fit(self):
         self.train_models()
+        print("training completed")
         self.composition_models()
 
     def predict(self, X):
@@ -71,11 +88,15 @@ class Model:
         return self.composition_model.predict_proba(enter_composition).T[1]
 
 if (__name__ == "__main__"):
-    model = Model(random_state = 42)
+    model_comp = Model(random_state = 42)
 
-    model.load(["data/x_train.txt", "data/y_train.txt"])
-    model.train_models()
-    model.fit()
+    model_comp.load(["data/x_train.txt", "data/y_train.txt"])
+    print("---datasets loaded---")
+
+    model_comp.fit()
+    print("---models fitted---")
+
+    data = model_comp.save()
 
     with open("model.pkl", "wb") as file:
-        pickle.dump(model, file)
+        pickle.dump(data, file)

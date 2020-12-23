@@ -2,33 +2,23 @@ import numpy as np
 
 import json, pickle
 
-# from joblib import load
+def predict(X, models_vector, composition_model):
+    enter_composition = np.array([model.predict(X) for model in models_vector]).T
 
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.ensemble import RandomForestClassifier
-
-from catboost import CatBoostClassifier
-from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier
-
-from sklearn.linear_model import LogisticRegression
-
-from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import train_test_split
+    return composition_model.predict(enter_composition)
 
 def eval(data):
     # x_test = np.array(json.loads(''.join(list(map(lambda x: x.strip(), data)))))
     x_test = np.array(data)
 
     with open("model.pkl", "rb") as file:
-        model = pickle.load(file)
+        object = pickle.load(file)
 
-    # model = load("model.joblib")
+    result = predict(x_test, object['models_vector'], object['composition_model'])
+    # result = object.predict(x_test)
+    # result = object.predict_proba(x_test).T[1]
 
-    result = model.predict_proba(x_test).T[1]
-
-    return np.array2string(np.array(result),separator=",",precision=20 ).replace("\\n", "\n").replace("\n", " ")
-
+    return np.array2string(np.array(result), separator = ",", precision = 20).replace("\\n", "\n").replace("\n", " ")
 
 # x_test = ""
 #
