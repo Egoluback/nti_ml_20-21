@@ -20,8 +20,6 @@ def eval(data):
         object = pickle.load(file)
 
     result = predict_proba(x_test, object['models_vector'], object['composition_model'], object['models_features'])
-    # result = object.predict(x_test)
-    # result = object.predict_proba(x_test).T[1]
 
     return np.array2string(np.array(result), separator = ",", precision = 20).replace("\\n", "\n").replace("\n", " ")
 
