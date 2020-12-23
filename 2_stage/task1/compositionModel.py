@@ -34,6 +34,8 @@ class Model:
         return {"models_vector": self.models_vector, "composition_model": self.composition_model}
 
     def train_models(self):
+        # TODO выделить фичи: лучшие колонки датасета для каждой модели
+
         self.model_RFC = RandomForestClassifier(n_estimators = 100, max_depth = 9, random_state = 42)
         self.model_RFC.fit(self.XTrain, self.YTrain)
 
