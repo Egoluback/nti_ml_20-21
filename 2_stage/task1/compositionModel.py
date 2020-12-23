@@ -14,22 +14,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
 
-import numpy as np
-
-import json, pickle
-
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.ensemble import RandomForestClassifier
-
-from catboost import CatBoostClassifier
-from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier
-
-from sklearn.linear_model import LogisticRegression
-
-from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import train_test_split
-
 class Model:
     def __init__(self, random_state):
         self.random_state = random_state
