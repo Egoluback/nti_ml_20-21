@@ -29,5 +29,5 @@ for dayIndex in range(len(days)):
 
     print("Progress: {0}".format(dayIndex / len(days)))
 
-with open("data/save.txt", "w+") as file:
+with open("data/news_data.txt", "w+") as file:
     file.write(json.dumps(all_views))
