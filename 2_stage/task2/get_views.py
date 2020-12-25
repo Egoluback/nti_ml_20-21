@@ -27,7 +27,7 @@ for dayIndex in range(len(days)):
 
     all_views[days[dayIndex]] = views_sum_
 
-    print("Progress: {0}".format(dayIndex / len(days)) * 100)
+    print("Progress: {0}".format(dayIndex / len(days) * 100))
 
 with open("data/news_data.txt", "w+") as file:
     file.write(json.dumps(all_views))
