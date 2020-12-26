@@ -110,3 +110,17 @@ class Model:
         enter_composition = self.composition_predict_proba(X).T
 
         return self.composition_model.predict_proba(enter_composition).T[1]
+
+if (__name__ == "__main__"):
+    model_comp = Model(random_state = 300)
+
+    model_comp.load(["data/x_train.txt", "data/y_train.txt"])
+    print("---datasets loaded---")
+
+    model_comp.fit()
+    print("---models fitted---")
+
+    data = model_comp.save()
+
+    with open("model.pkl", "wb") as file:
+        pickle.dump(data, file)
