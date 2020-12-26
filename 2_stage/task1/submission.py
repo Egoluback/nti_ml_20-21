@@ -8,7 +8,7 @@ def predict(X, models_vector, composition_model, models_features):
     return composition_model.predict(enter_composition)
 
 def predict_proba(X, models_vector, composition_model, models_features):
-    enter_composition = np.array([models_vector[modelIndex].predict_proba(X[:, models_features[modelIndex]]).T[1] for modelIndex in range(len(models_vector))]).T
+    enter_composition = np.array([models_vector[modelIndex].predict_proba(X[:, models_features[list(models_features.keys())[modelIndex]]]).T[1] for modelIndex in range(len(models_features.keys()))]).T
 
     return composition_model.predict_proba(enter_composition).T[1]
 
