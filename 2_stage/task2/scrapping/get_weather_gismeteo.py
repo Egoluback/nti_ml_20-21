@@ -14,10 +14,6 @@ CITIES = [
             ("Свердловская область", "Екатеринбург")
           ]
 
-def time_check(hour):
-    if (hour >= 9 and hour <= 17): return "day"
-    else: return "night"
-
 url_meteopost = "https://www.gismeteo.ru/diary/4079/"
 
 driver = webdriver.Chrome(executable_path = "/home/egoluback/Documents/NTI/2_stage/ML/2_stage/task2/scrapping/chromedriver")
