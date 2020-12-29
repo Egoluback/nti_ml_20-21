@@ -21,22 +21,30 @@ driver.get(url_meteopost)
 
 print("Driver loaded.")
 
-result_arr = []
+result_arr = {}
 
 for city in CITIES:
+    city_result = []
     print("---{0}---".format(city[1]))
-    time.sleep(1)
-    driver.find_element_by_xpath("//select[@name = 'sd_distr']/option[text() = '{0}']".format(city[0])).click()
-    print("sd_distr choosen.")
+    # time.sleep(1)
+    # driver.find_element_by_xpath("//select[@name = 'sd_distr']/option[text() = '{0}']".format(city[0])).click()
+    # print("sd_distr choosen.")
+    #
+    # time.sleep(1)
+
+    # driver.find_element_by_xpath("//select[@name = 'sd_city']/option[text() = '{0}']".format(city[1])).click()
+    # print("sd_city choosen.")
 
     time.sleep(1)
-
-    driver.find_element_by_xpath("//select[@name = 'sd_city']/option[text() = '{0}']".format(city[1])).click()
-    print("sd_city choosen.")
 
     for yearIndex in range(len(YEARS)):
         driver.find_element_by_xpath("//select[@name = 'Year']/option[text() = '{0}']".format(YEARS[yearIndex])).click()
         for monthIndex in range(len(MONTHES)):
+            time.sleep(0.5)
+            driver.find_element_by_xpath("//select[@name = 'sd_distr']/option[text() = '{0}']".format(city[0])).click()
+            time.sleep(0.5)
+            driver.find_element_by_xpath("//select[@name = 'sd_city']/option[text() = '{0}']".format(city[1])).click()
+
             driver.find_element_by_xpath("//select[@name = 'Month']/option[text() = '{0}']".format(MONTHES[monthIndex])).click()
             driver.find_element_by_xpath("//button[@id = 'selector_go_btn']").click()
 
@@ -46,9 +54,11 @@ for city in CITIES:
             temp_night = pd.Series(weather_pd['Вечер']['Температура'], name = "temp_night")
 
             result_temp = pd.merge(temp_day, temp_night, right_index = True, left_index = True)
-            result_arr.append([city[1], YEARS[yearIndex], monthIndex + 1, result_temp.to_dict()])
+            city_result.append([YEARS[yearIndex], monthIndex + 1, result_temp.to_dict()])
 
             print("Progress: {0}%".format((yearIndex * len(MONTHES) + monthIndex + 1) / (len(MONTHES) * len(YEARS)) * 100))
+
+    result_arr[city[1]] = city_result
 
 with open("../data/weather_data.txt", "w+") as file:
     file.write(json.dumps(result_arr))
