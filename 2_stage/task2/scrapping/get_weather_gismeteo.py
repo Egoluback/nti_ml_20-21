@@ -26,14 +26,6 @@ result_arr = {}
 for city in CITIES:
     city_result = []
     print("---{0}---".format(city[1]))
-    # time.sleep(1)
-    # driver.find_element_by_xpath("//select[@name = 'sd_distr']/option[text() = '{0}']".format(city[0])).click()
-    # print("sd_distr choosen.")
-    #
-    # time.sleep(1)
-
-    # driver.find_element_by_xpath("//select[@name = 'sd_city']/option[text() = '{0}']".format(city[1])).click()
-    # print("sd_city choosen.")
 
     time.sleep(1)
 
