@@ -5,7 +5,7 @@ import pandas as pd
 
 df_train = pd.read_csv("data/train.csv")
 
-SEARCHES_NAMES = ["wo", "tnt", "1st", "r1", "sts", "news"]
+SEARCHES_NAMES = ["wo", "tnt", "1st", "r1", "sts", "news", "rentv"]
 
 result = pd.DataFrame(columns = [])
 
