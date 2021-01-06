@@ -11,8 +11,10 @@ def int_check(x):
     except ValueError:
         return False
 
-df_train = pd.read_csv("data/train.csv")
-days = df_train["Дата_День"].apply(lambda x: datetime.datetime.strftime(datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S"), "%d.%m.%Y")).unique()
+dataset = "train"
+
+df = pd.read_csv("../data/{0}.csv".format(dataset))
+days = df["Дата_День"].apply(lambda x: datetime.datetime.strftime(datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S"), "%d.%m.%Y")).unique()
 
 print("Unique days loaded.")
 
@@ -29,5 +31,5 @@ for dayIndex in range(len(days)):
 
     print("Progress: {0}".format(dayIndex / len(days) * 100))
 
-with open("data/news_data.txt", "w+") as file:
+with open("../data/news_data_{0}.txt".format(dataset), "w+") as file:
     file.write(json.dumps(all_views))

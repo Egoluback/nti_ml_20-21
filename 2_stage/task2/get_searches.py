@@ -3,7 +3,9 @@ import datetime
 import numpy as np
 import pandas as pd
 
-df_train = pd.read_csv("data/train.csv")
+dataset = "train"
+
+df = pd.read_csv("data/{0}.csv".format(dataset))
 
 SEARCHES_NAMES = ["wo", "tnt", "1st", "r1", "sts", "news", "rentv"]
 
@@ -40,7 +42,7 @@ for name in SEARCHES_NAMES:
         all_datas_searches["searches"][dataIndex] = current_searches
 
 
-    days_time = df_train["Дата"].apply(lambda x: datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S"))
+    days_time = df["Дата"].apply(lambda x: datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S"))
     days_year = pd.Series(days_time.apply(lambda x: x.year), name = "year")
     days_month = pd.Series(days_time.apply(lambda x: x.month), name = "month")
     days_day = pd.Series(days_time.apply(lambda x: x.day), name = "day")
@@ -73,4 +75,4 @@ for name in SEARCHES_NAMES:
     # input()
 
 
-result.to_csv("data/searches_full.csv")
+result.to_csv("data/searches_full_{0}.csv".format(dataset))
