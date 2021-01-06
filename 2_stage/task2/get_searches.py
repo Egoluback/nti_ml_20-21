@@ -10,11 +10,9 @@ SEARCHES_NAMES = ["wo", "tnt", "1st", "r1", "sts", "news", "rentv"]
 result = pd.DataFrame(columns = [])
 
 for name in SEARCHES_NAMES:
-
-    df_searches_init = pd.read_csv("data/searches/searches_{}.csv".format(name))
+    df_searches_init = pd.read_csv("data/searches/searches_{0}.csv".format(name))
 
     df_searches = pd.DataFrame(np.array([list(df_searches_init["Категория: Все категории"].index)[1 :], list(df_searches_init["Категория: Все категории"])[1 :]]).T, columns = ["week", "searches"])
-
 
     weeks_time = df_searches["week"].apply(lambda x: datetime.datetime.strptime(x, "%Y-%m-%d"))
 
@@ -68,9 +66,11 @@ for name in SEARCHES_NAMES:
                     days_this.loc[days_this["day"] == day, "searches"] = list(searches_)[0]
             days_fullymd[(days_fullymd["year"] == year) & (days_fullymd["month"] == monthIndex + 1)] = days_this
 
-
-
     result["searches_{0}".format(name)] = days_fullymd["searches"]
+
+    # print(all_datas_searches[(all_datas_searches["year"] == 2019) & (all_datas_searches["month"] == 4) & (all_datas_searches["day"] == 4)])
+    # print(result[result["searches_wo"] == 65.0])
+    # input()
 
 
 result.to_csv("data/searches_full.csv")
