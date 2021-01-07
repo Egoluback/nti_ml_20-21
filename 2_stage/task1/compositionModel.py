@@ -18,7 +18,7 @@ class Model:
     def __init__(self, random_state):
         self.random_state = random_state
         self.hyperparams = {
-                              "RFC": (100, 9),
+                              "RFC": (600, 70),
 #                             "GBC": (1000, 3),
 #                             "XGB": (80, 5),
                             "CBC": (60, 5)}
@@ -112,7 +112,7 @@ class Model:
         return self.composition_model.predict_proba(enter_composition).T[1]
 
 if (__name__ == "__main__"):
-    model_comp = Model(random_state = 300)
+    model_comp = Model(random_state = 315)
 
     model_comp.load(["data/x_train.txt", "data/y_train.txt"])
     print("---datasets loaded---")

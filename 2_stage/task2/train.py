@@ -60,90 +60,28 @@ print(df_train)
 print("PREPROCESSING COMPLETED")
 print("TRAINING")
 
-columns_search = np.array([weekdays, hours_onehot, 'hour_mean_tvr18', 'news_views', 'news_views_shift', 'temp_Moscow',
-       'temp_Peter', 'temp_Novosib', 'temp_Ekb', 'searches_wo',
-       'searches_tnt', 'searches_1st', 'searches_r1', 'searches_sts',
-       'searches_news', 'searches_rentv', 'lockdown_index', 'working_day',
-       'oil_price', 'dollar_rate'])
+# best 500
+random_state_ = 500
 
 channels = df_train["Канал"].unique()
 
 targets = [tvr_18, tvr_55, share_18, share_55]
 
 for target in targets:
-    print("-------{0}-------".format(target))
+    print("------{0}------".format(target))
+    for channelIndex in range(len(channels)):
+        print("---{0}---".format(channels[channelIndex]))
+        # best 800
+        model = CatBoostRegressor(random_state = random_state_, silent = True, n_estimators = 800, max_depth = 8)
 
-    models_target = []
+        with open("data/models/model_features_{0}_{1}.txt".format(target, channelIndex), "r") as file:
+            features = json.loads(file.read())
 
-    for channel in channels:
-        errors = []
+        print("TRAINING")
+        XTrain, XTest, YTrain, YTest = train_test_split(df_train[df_train["Канал"] == channels[channelIndex]][features].fillna(0), df_train[df_train["Канал"] == channels[channelIndex]][target], test_size = 0.33, random_state = random_state_)
+        model.fit(XTrain, YTrain)
 
-        print("---{0}---".format(channel))
+        print("SAVING")
+        model.save_model("data/models/model_{0}_{1}".format(target, channelIndex))
 
-        for column in columns_search:
-
-            if (type(column) == str): column = [column]
-
-            XTrain, XTest, YTrain, YTest = train_test_split(df_train[df_train["Канал"] == channel][column].fillna(0), df_train[df_train["Канал"] == channel][target], test_size = 0.33, random_state = 42)
-
-            model_cbr = CatBoostRegressor(silent = True)
-            model_cbr.fit(XTrain, YTrain)
-
-            error = mean_squared_log_error(YTest, model_cbr.predict(XTest))
-            print("MSLE: {0}; Column: {1}".format(error, column))
-
-            errors.append(error)
-
-        print("Columns brut force completed")
-
-        indexes_sorted = list(map(lambda x: errors.index(x), list(sorted(set(errors)))))
-        print("Sorted indexes: {0}".format(indexes_sorted))
-
-        out_indexes = []
-        current_features = []
-        all_features = columns_search.copy()
-
-        errors = []
-        models = []
-
-        models_errors = []
-
-        print("Features search started")
-
-        for i in range(len(indexes_sorted)):
-            if (type(columns_search[indexes_sorted[i]]) == str):
-                current_features.append(columns_search[indexes_sorted[i]])
-            else:
-                current_features += columns_search[indexes_sorted[i]]
-
-            # print("Current features: {0}".format(current_features))
-
-            XTrain, XTest, YTrain, YTest = train_test_split(df_train[df_train["Канал"] == channel][current_features].fillna(0), df_train[df_train["Канал"] == channel][target], test_size = 0.33, random_state = 42)
-
-            model_cbr = CatBoostRegressor(silent = True)
-            model_cbr.fit(XTrain, YTrain)
-
-            error = mean_squared_log_error(YTest, np.absolute(model_cbr.predict(XTest)))
-
-            print("MSLE: {0}; Last column: {1}".format(error, current_features[-1]))
-
-            errors.append(error)
-
-            # if (i >= 1 and errors[i] > errors[i - 1]):
-            if (i >= 1 and errors[i] > models_errors[-1]):
-                # print("---making someone out---")
-                print("{0} was ejected.".format(current_features[-1]))
-                current_features.pop(len(current_features) - 1)
-            else:
-                models.append(model_cbr)
-                models_errors.append(error)
-
-        print("Last model MSLE error: {0}".format(mean_squared_log_error(YTest, np.absolute(models[-1].predict(XTest)))))
-        models_target.append([models[-1], current_features])
-
-    print("SAVING")
-    for modelIndex in range(len(models_target)):
-        models_target[modelIndex][0].save_model("data/models/model_{0}_{1}".format(target, modelIndex))
-        with open("data/models/model_features_{0}_{1}.txt".format(target, modelIndex), "w+") as file:
-            file.write(json.dumps(models_target[modelIndex][1]))
-        print("{0} saved".format(modelIndex))
+        print("{0} saved".format(channelIndex))
