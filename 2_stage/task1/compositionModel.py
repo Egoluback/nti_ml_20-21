@@ -21,7 +21,8 @@ class Model:
                               "RFC": (600, 70),
 #                             "GBC": (1000, 3),
 #                             "XGB": (80, 5),
-                            "CBC": (60, 5)}
+                            # "CBC": (60, 5)}
+                            "CBC": (500, 5)}
 #                             "LGBM": (70, 10)}
         self.models_features = {
             "RFC": [2,  5, 15, 19, 21, 22],
@@ -64,7 +65,7 @@ class Model:
 #         print("/* XGB trained */")
 #         print("Score: {0} ".format((roc_auc_score(self.YTrain, self.model_XGB.predict_proba(self.XTrain[:, self.models_features["XGB"]]).T[1]), roc_auc_score(self.YComposition, self.model_XGB.predict_proba(self.XComposition[:, self.models_features["XGB"]]).T[1]))))
 
-        self.model_CBC = CatBoostClassifier(n_estimators = self.hyperparams["CBC"][0], max_depth = self.hyperparams["CBC"][1], random_state = self.random_state, silent = True)
+        self.model_CBC = CatBoostClassifier(n_estimators = self.hyperparams["CBC"][0], max_depth = self.hyperparams["CBC"][1], learning_rate = 0.0155, random_state = self.random_state, silent = True)
         self.model_CBC.fit(self.XTrain[:, self.models_features["CBC"]], self.YTrain)
 
         print("/* CBC trained */")
@@ -118,9 +119,31 @@ if (__name__ == "__main__"):
     print("---datasets loaded---")
 
     model_comp.fit()
+
+    # 315
+    # 5
+    # random_state_ = 10
+    #
+    # x_train = []
+    # y_train = []
+
+    # with open("data/x_train.txt", "r") as file:
+    #     x_train = np.array(json.loads(''.join(list(map(lambda x: x.strip(), file.readlines())))))
+    #
+    # with open("data/y_train.txt", "r") as file:
+    #     y_train = np.array(json.loads(''.join(list(map(lambda x: x.strip(), file.readlines())))))
+
+    # XTrain, XTest, YTrain, YTest = train_test_split(x_train, y_train, test_size = 0.33, random_state = random_state_)
+    # model_CBC = CatBoostClassifier(n_estimators = 500, max_depth = 5, learning_rate = 0.0155, random_state = random_state_, silent = True)
+    # model_CBC.fit(XTrain, YTrain)
+
+
     print("---models fitted---")
 
     data = model_comp.save()
 
     with open("model.pkl", "wb") as file:
         pickle.dump(data, file)
+
+    # with open("model.pkl", "wb") as file:
+    #     pickle.dump({"model": model_CBC}, file)

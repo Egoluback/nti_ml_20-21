@@ -55,20 +55,35 @@ df_train["hour_mean_tvr55"] = df_train["hour"].apply(lambda x: hour_mean_tvr55[x
 df_train["hour_mean_share18"] = df_train["hour"].apply(lambda x: hour_mean_share18[x])
 df_train["hour_mean_share55"] = df_train["hour"].apply(lambda x: hour_mean_share55[x])
 
+channels = df_train["Канал"].unique()
+targets = [tvr_18, tvr_55, share_18, share_55]
 
-print(df_train)
+for target in targets:
+    for channel in channels:
+        mean = df_train.groupby(["Канал", "Месяц"])[target].mean()[channel]
+        for month in df_train["Месяц"].unique():
+            df_train.loc[(df_train["Канал"] == channel) & (df_train["Месяц"] == month), "rolling_{0}".format(target)] = mean[month]
+
+# print(df_train["mean_{0}".format(tvr_18)])
+# print(df_train.groupby("Месяц")["rolling_{0}".format(tvr_18)].value_counts())
+# input()
 print("PREPROCESSING COMPLETED")
 print("TRAINING")
 
-columns_search = np.array([weekdays, hours_onehot, 'hour_mean_tvr18', 'news_views', 'news_views_shift', 'temp_Moscow',
-       'temp_Peter', 'temp_Novosib', 'temp_Ekb', 'searches_wo',
-       'searches_tnt', 'searches_1st', 'searches_r1', 'searches_sts',
-       'searches_news', 'searches_rentv', 'lockdown_index', 'working_day',
-       'oil_price', 'dollar_rate'])
+rolling_names = ["rolling_{0}".format(target) for target in targets]
+mean_names = ["mean_{0}".format(target) for target in targets]
 
-channels = df_train["Канал"].unique()
+columns_search = np.array([weekdays, hours_onehot, rolling_names,
+        'hour_mean_tvr18', 'hour_mean_tvr55', 'hour_mean_share18', 'hour_mean_share55',
+        'news_views', 'news_views_shift', 'temp_Moscow',
+        'temp_Peter', 'temp_Novosib', 'temp_Ekb', 'searches_wo',
+        'searches_tnt', 'searches_1st', 'searches_r1', 'searches_sts',
+        'searches_news', 'searches_rentv', 'lockdown_index', 'working_day',
+        'oil_price', 'dollar_rate'])
 
-targets = [tvr_18, tvr_55, share_18, share_55]
+cat_features_ = ['working_day'] + weekdays + hours_onehot
+
+random_state_ = 500
 
 for target in targets:
     print("-------{0}-------".format(target))
@@ -82,15 +97,23 @@ for target in targets:
 
         for column in columns_search:
 
+            print("---")
             if (type(column) == str): column = [column]
 
             XTrain, XTest, YTrain, YTest = train_test_split(df_train[df_train["Канал"] == channel][column].fillna(0), df_train[df_train["Канал"] == channel][target], test_size = 0.33, random_state = 42)
 
-            model_cbr = CatBoostRegressor(silent = True)
-            model_cbr.fit(XTrain, YTrain)
+            # if (len(list(set(column) & set(cat_features_))) > 0):
+            #     print("cat feature")
+            #     model = CatBoostRegressor(silent = True, cat_features = column, random_state = random_state_)
+            # else:
+            #     model = CatBoostRegressor(silent = True, random_state = random_state_)
+            model = CatBoostRegressor(silent = True)
 
-            error = mean_squared_log_error(YTest, model_cbr.predict(XTest))
-            print("MSLE: {0}; Column: {1}".format(error, column))
+            model.fit(XTrain, YTrain)
+
+            error = mean_squared_log_error(YTest, np.absolute(model.predict(XTest)))
+            print("Train MSLE: {0}; Column: {1}".format(mean_squared_log_error(YTrain, np.absolute(model.predict(XTrain))), column))
+            print("Test MSLE: {0}; Column: {1}".format(error, column))
 
             errors.append(error)
 
@@ -111,6 +134,7 @@ for target in targets:
         print("Features search started")
 
         for i in range(len(indexes_sorted)):
+            print("---")
             if (type(columns_search[indexes_sorted[i]]) == str):
                 current_features.append(columns_search[indexes_sorted[i]])
             else:
@@ -120,12 +144,18 @@ for target in targets:
 
             XTrain, XTest, YTrain, YTest = train_test_split(df_train[df_train["Канал"] == channel][current_features].fillna(0), df_train[df_train["Канал"] == channel][target], test_size = 0.33, random_state = 42)
 
-            model_cbr = CatBoostRegressor(silent = True)
-            model_cbr.fit(XTrain, YTrain)
+            # if (len(list(set(current_features) & set(cat_features_))) > 0):
+            #     model = CatBoostRegressor(silent = True, cat_features = list(set(current_features) & set(cat_features_)), random_state = random_state_)
+            # else:
+            #     model = CatBoostRegressor(silent = True, random_state = random_state_)
+            model = CatBoostRegressor(silent = True)
 
-            error = mean_squared_log_error(YTest, np.absolute(model_cbr.predict(XTest)))
+            model.fit(XTrain, YTrain)
 
-            print("MSLE: {0}; Last column: {1}".format(error, current_features[-1]))
+            error = mean_squared_log_error(YTest, np.absolute(model.predict(XTest)))
+
+            print("Train MSLE: {0}; Column: {1}".format(mean_squared_log_error(YTrain, np.absolute(model.predict(XTrain))), current_features[-1]))
+            print("Test MSLE: {0}; Column: {1}".format(error, current_features[-1]))
 
             errors.append(error)
 
@@ -135,7 +165,7 @@ for target in targets:
                 print("{0} was ejected.".format(current_features[-1]))
                 current_features.pop(len(current_features) - 1)
             else:
-                models.append(model_cbr)
+                models.append(model)
                 models_errors.append(error)
 
         print("Last model MSLE error: {0}".format(mean_squared_log_error(YTest, np.absolute(models[-1].predict(XTest)))))

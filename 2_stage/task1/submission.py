@@ -12,6 +12,10 @@ def predict_proba(X, models_vector, composition_model, models_features):
 
     return composition_model.predict_proba(enter_composition).T[1]
 
+def predict_CBC(X, model):
+
+    return model.predict_proba(X).T[1]
+
 def eval(data):
     # x_test = np.array(json.loads(''.join(list(map(lambda x: x.strip(), data)))))
     x_test = np.array(data)
@@ -20,6 +24,7 @@ def eval(data):
         object = pickle.load(file)
 
     result = predict_proba(x_test, object['models_vector'], object['composition_model'], object['models_features'])
+    # result = predict_CBC(x_test, object['model'])
 
     return np.array2string(np.array(result), separator = ",", precision = 20).replace("\\n", "\n").replace("\n", " ")
 
